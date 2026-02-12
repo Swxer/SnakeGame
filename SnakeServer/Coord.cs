@@ -11,6 +11,17 @@ namespace SnakeServer
             this.X = x;
             this.Y = y;
         }
+
+        public override bool Equals(object? obj)
+        {
+            if ((obj == null) || !GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            
+            Coord other = (Coord)obj;
+            return this.X == other.X && this.Y == other.Y;
+        }
     }
 }
 

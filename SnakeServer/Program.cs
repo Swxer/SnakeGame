@@ -6,10 +6,11 @@ Random rand = new Random();
 Coord applePos = new Coord(rand.Next(1, gridDimensions.X - 1), rand.Next(1, gridDimensions.Y - 1));
 int frameDelayMs = 100;
 Direction movementDirection = Direction.Down;
+Console.CursorVisible = false;
 
 while (true)
 {
-    Console.Clear();
+    Console.SetCursorPosition(0, 0);
     snakePos.ApplyMovementDirection(movementDirection);
     for (int y = 0; y < gridDimensions.Y; y++)
     {

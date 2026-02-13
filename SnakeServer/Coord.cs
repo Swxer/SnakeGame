@@ -19,5 +19,24 @@
 
         public override bool Equals(object? obj) => Equals(obj as Coord);
         public override int GetHashCode() => HashCode.Combine(X, Y);
+
+        public void ApplyMovementDirection(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Left:
+                    X--;
+                    break;
+                case Direction.Right:
+                    X++;
+                    break;
+                case Direction.Up:
+                    Y--;
+                    break;
+                case Direction.Down:
+                    Y++;
+                    break;
+            }
+        }
     }
 }

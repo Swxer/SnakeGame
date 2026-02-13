@@ -5,10 +5,12 @@ Coord snakePos = new Coord(10, 2);
 Random rand = new Random();
 Coord applePos = new Coord(rand.Next(1, gridDimensions.X - 1), rand.Next(1, gridDimensions.Y - 1));
 int frameDelayMs = 100;
+Direction movementDirection = Direction.Down;
 
 while (true)
 {
     Console.Clear();
+    snakePos.ApplyMovementDirection(movementDirection);
     for (int y = 0; y < gridDimensions.Y; y++)
     {
         for (int x = 0; x < gridDimensions.X; x++)
@@ -35,5 +37,33 @@ while (true)
         Console.WriteLine();
     }
 
-    Thread.Sleep(frameDelayMs);
+    DateTime time = DateTime.Now;
+
+    while ((DateTime.Now - time).TotalMilliseconds < frameDelayMs)
+    {
+        if (Console.KeyAvailable)
+        {
+            ConsoleKey key = Console.ReadKey().Key;
+
+            switch (key)
+            {
+                case ConsoleKey.LeftArrow:
+                case ConsoleKey.A:
+                    movementDirection = Direction.Left;
+                    break;
+                case ConsoleKey.RightArrow:
+                case ConsoleKey.D:
+                    movementDirection = Direction.Right;
+                    break;
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.W:
+                    movementDirection = Direction.Up;
+                    break;
+                case ConsoleKey.DownArrow:
+                case ConsoleKey.S:
+                    movementDirection = Direction.Down;
+                    break;
+            }
+        }
+    }
 }

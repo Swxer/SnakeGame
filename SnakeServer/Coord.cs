@@ -1,15 +1,9 @@
 ﻿namespace SnakeServer
 {
-    public class Coord : IEquatable<Coord>
+    public class Coord(int x, int y) : IEquatable<Coord>
     {
-        public int X { get; private set; }
-        public int Y { get; private set; }
-
-        public Coord(int x, int y)
-        {
-            this.X = x;
-            this.Y = y;
-        }
+        public int X { get; private set; } = x;
+        public int Y { get; private set; } = y;
 
         public bool Equals(Coord? other)
         {
@@ -36,6 +30,8 @@
                 case Direction.Down:
                     Y++;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
         }
     }

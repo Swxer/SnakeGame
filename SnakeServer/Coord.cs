@@ -1,38 +1,35 @@
-﻿namespace SnakeServer
+﻿namespace SnakeServer;
+
+public record Coord
 {
-    public class Coord(int x, int y) : IEquatable<Coord>
+    public Coord(int x, int y)
     {
-        public int X { get; private set; } = x;
-        public int Y { get; private set; } = y;
+        X = x;
+        Y = y;
+    }
 
-        public bool Equals(Coord? other)
+    public int X { get; private set; }
+    public int Y { get; private set; }
+
+
+    public void ApplyMovementDirection(Direction direction)
+    {
+        switch (direction)
         {
-            if (other is null) return false;
-            return X == other.X && Y == other.Y;
-        }
-
-        public override bool Equals(object? obj) => Equals(obj as Coord);
-        public override int GetHashCode() => HashCode.Combine(X, Y);
-
-        public void ApplyMovementDirection(Direction direction)
-        {
-            switch (direction)
-            {
-                case Direction.Left:
-                    X--;
-                    break;
-                case Direction.Right:
-                    X++;
-                    break;
-                case Direction.Up:
-                    Y--;
-                    break;
-                case Direction.Down:
-                    Y++;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-            }
+            case Direction.Left:
+                X--;
+                break;
+            case Direction.Right:
+                X++;
+                break;
+            case Direction.Up:
+                Y--;
+                break;
+            case Direction.Down:
+                Y++;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
         }
     }
 }

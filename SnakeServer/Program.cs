@@ -10,8 +10,8 @@ public class Program
         Rand.Next(1, GridDimensions.Y - 1));
 
     private static Direction _movementDirection = Direction.Down;
-    private static List<Coord> _snakeTail = new();
-    private static int _tailLength = 1;
+    private static List<Coord> _snakeTail = [];
+    private static int _tailLength = 0;
 
     private static void Main(string[] args)
     {
@@ -23,6 +23,7 @@ public class Program
             Console.SetCursorPosition(0, 0);
             _snakePos.ApplyMovementDirection(_movementDirection);
             RenderGame(GridDimensions, _snakePos, _applePos);
+            CheckAppleCollision(_snakePos, _applePos);
             UpdateSnakeTail(_snakePos);
             GetMovementInput();
         }
@@ -69,5 +70,12 @@ public class Program
         _snakeTail.Add(new Coord(snake.X, snake.Y));
         if (_snakeTail.Count > _tailLength)
             _snakeTail.RemoveAt(0);
+    }
+
+    private static void CheckAppleCollision(Coord snake, Coord apple)
+    {
+        if (snake.X != apple.X || snake.Y != apple.Y) return;
+        _tailLength++;
+        _applePos = new Coord(Rand.Next(1,GridDimensions.X - 1), Rand.Next(1,GridDimensions.Y - 1));
     }
 }

@@ -18,8 +18,10 @@ public class Snake
     public int X => _snakeHead.X;
     public int Y => _snakeHead.Y;
 
-    public void UpdateSnakeTail(Coord apple)
+    public void GrowSnakeTail(Apple apple)
     {
+        TailLength++;
+        Score++;
         _snakeTail.Enqueue(new Coord(apple.X, apple.Y));
         if (_snakeTail.Count > TailLength)
             _snakeTail.Dequeue();

@@ -3,25 +3,24 @@
 public class Program
 {
     private const int TargetFps = 16;
-    private static readonly Coord GridDimensions = new(50, 20);
-    private static readonly Random Rand = new();
-
-    private static Coord _applePos = new(Rand.Next(1, GridDimensions.X - 1),
-        Rand.Next(1, GridDimensions.Y - 1));
+    private const int XDimension = 50;
+    private const int YDimension = 20;
+    private static readonly Coord GridDimensions = new(XDimension, YDimension);
 
     private static void Main(string[] args)
     {
         Console.CursorVisible = false;
         Console.Clear();
         Snake snake = new(10, 2);
+        Apple apple = new(GridDimensions);
 
         while (true)
         {
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Score: " + snake.Score);
             snake.ApplyMovementDirection(GetMovementInput());
-            CheckAppleCollision(snake, _applePos);
-            RenderGame(GridDimensions, snake, _applePos);
+            CheckAppleCollision(snake, apple);
+            RenderGame(GridDimensions, snake, apple);
             Thread.Sleep(1000 / TargetFps);
         }
     }
@@ -43,7 +42,7 @@ public class Program
         return movementDirection;
     }
 
-    private static void RenderGame(Coord grid, Snake snake, Coord apple)
+    private static void RenderGame(Coord grid, Snake snake, Apple apple)
     {
         for (var y = 0; y < grid.Y; y++)
         {
@@ -61,12 +60,10 @@ public class Program
     }
 
 
-    private static void CheckAppleCollision(Snake snake, Coord apple)
+    private static void CheckAppleCollision(Snake snake, Apple apple)
     {
         if (snake.X != apple.X || snake.Y != apple.Y) return;
-        snake.TailLength++;
-        snake.Score++;
-        _applePos = new Coord(Rand.Next(1, GridDimensions.X - 1), Rand.Next(1, GridDimensions.Y - 1));
-        snake.UpdateSnakeTail(apple);
+        snake.GrowSnakeTail(apple);
+        Apple.PickRandomAppleLocation(GridDimensions);
     }
 }

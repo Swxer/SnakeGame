@@ -1,10 +1,10 @@
-﻿namespace SnakeServer
+﻿namespace SnakeServer;
+
+public enum Direction
 {
-    public enum Direction
-    {
-        Up,
-        Down,
-        Left,
-        Right
-    }
+    Up,
+    Down,
+    Left,
+    Right,
+    Invalid
 }

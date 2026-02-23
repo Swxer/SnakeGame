@@ -47,14 +47,18 @@ public class Program
         for (var y = 0; y < grid.Y; y++)
         {
             for (var x = 0; x < grid.X; x++)
-                if (x == snake.X && y == snake.Y)
+            {
+                var currentPos = new Coord(x, y);
+                if (snake.HeadExistsAtCoordinate(currentPos) || snake.TailExistsAtCoordinate(currentPos))
                     Console.Write('■');
-                else if (x == apple.X && y == apple.Y)
+                else if (apple.AppleExistsAtCoordinate(currentPos))
                     Console.Write('A');
                 else if (x == 0 || y == 0 || x == grid.X - 1 || y == grid.Y - 1)
                     Console.Write('#');
                 else
                     Console.Write(' ');
+            }
+
             Console.WriteLine();
         }
     }
@@ -63,7 +67,7 @@ public class Program
     private static void CheckAppleCollision(Snake snake, Apple apple)
     {
         if (snake.X != apple.X || snake.Y != apple.Y) return;
-        snake.GrowSnakeTail(apple);
+        snake.OnEatApple();
         Apple.PickRandomAppleLocation(GridDimensions);
     }
 }

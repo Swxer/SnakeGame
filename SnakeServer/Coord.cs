@@ -1,13 +1,7 @@
 ﻿namespace SnakeServer;
 
-public record Coord
+public record Coord(int X, int Y)
 {
-    public Coord(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
-
-    public int X { get; set; }
-    public int Y { get; set; }
+    public int X { get; set; } = X;
+    public int Y { get; set; } = Y;
 }

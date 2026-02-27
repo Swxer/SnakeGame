@@ -62,12 +62,11 @@ public class Program
             Console.WriteLine();
         }
     }
-
-
+    
     private static void CheckAppleCollision(Snake snake, Apple apple)
     {
         if (snake.X != apple.X || snake.Y != apple.Y) return;
-        snake.OnEatApple();
+        snake.HasEaten = true;
         Apple.PickRandomAppleLocation(GridDimensions);
     }
 }

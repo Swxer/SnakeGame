@@ -7,19 +7,14 @@ public class Snake(int startingX, int startingY)
     private bool _hasEaten;
     private Direction _movementDirection = Direction.Down;
 
-    public int Score { get; private set; }
+    public int Score => _snakeTail.Count;
     public int X => _snakeHead.X;
     public int Y => _snakeHead.Y;
-
-    public void OnEatApple()
-    {
-        Score++;
-        _hasEaten = true;
-    }
+    public bool HasEaten { set => _hasEaten = value; }
 
     public void ApplyMovementDirection(Direction direction)
     {
-        UpdateTail();
+        GrowTail();
         if (direction != Direction.Invalid) _movementDirection = direction;
 
         switch (_movementDirection)
@@ -33,7 +28,7 @@ public class Snake(int startingX, int startingY)
 
     public bool HeadExistsAtCoordinate(Coord coord)
     {
-        return X == coord.X && Y == coord.Y;
+        return coord == _snakeHead;
     }
 
     public bool TailExistsAtCoordinate(Coord coord)
@@ -41,7 +36,7 @@ public class Snake(int startingX, int startingY)
         return _snakeTail.Contains(coord);
     }
 
-    private void UpdateTail()
+    private void GrowTail()
     {
         _snakeTail.Enqueue(new Coord(_snakeHead.X, _snakeHead.Y));
         if (_hasEaten)

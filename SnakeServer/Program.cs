@@ -18,7 +18,12 @@ public class Program
         {
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Score: " + snake.Score);
-            snake.ApplyMovementDirection(GetMovementInput());
+            
+            var isEating = CheckAppleCollision(snake, apple);
+            if (isEating)
+                Apple.PickRandomAppleLocation(GridDimensions);
+            
+            snake.ApplyMovementDirection(GetMovementInput(), isEating);
             CheckAppleCollision(snake, apple);
             RenderGame(GridDimensions, snake, apple);
             Thread.Sleep(1000 / TargetFps);
@@ -63,10 +68,8 @@ public class Program
         }
     }
     
-    private static void CheckAppleCollision(Snake snake, Apple apple)
+    private static bool CheckAppleCollision(Snake snake, Apple apple)
     {
-        if (snake.X != apple.X || snake.Y != apple.Y) return;
-        snake.HasEaten = true;
-        Apple.PickRandomAppleLocation(GridDimensions);
+        return snake.X == apple.X && snake.Y == apple.Y;
     }
 }

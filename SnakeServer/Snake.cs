@@ -10,11 +10,15 @@ public class Snake(int startingX, int startingY)
     public int Score => _snakeTail.Count;
     public int X => _snakeHead.X;
     public int Y => _snakeHead.Y;
-    public bool HasEaten { set => _hasEaten = value; }
 
-    public void ApplyMovementDirection(Direction direction)
+    public void ApplyMovementDirection(Direction direction, bool isEating)
     {
-        GrowTail();
+        if (isEating)
+            GrowTail();
+        else
+        {
+            RenderTail();
+        }
         if (direction != Direction.Invalid) _movementDirection = direction;
 
         switch (_movementDirection)
@@ -36,12 +40,17 @@ public class Snake(int startingX, int startingY)
         return _snakeTail.Contains(coord);
     }
 
-    private void GrowTail()
+    private void RenderTail()
     {
         _snakeTail.Enqueue(new Coord(_snakeHead.X, _snakeHead.Y));
         if (_hasEaten)
             _hasEaten = false;
         else if (_snakeTail.Count > 0)
             _snakeTail.Dequeue();
+    }
+
+    private void GrowTail()
+    {
+        _snakeTail.Enqueue(new Coord(_snakeHead.X, _snakeHead.Y));
     }
 }

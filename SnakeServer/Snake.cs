@@ -4,7 +4,6 @@ public class Snake(int startingX, int startingY)
 {
     private readonly Coord _snakeHead = new(startingX, startingY);
     private readonly Queue<Coord> _snakeTail = new();
-    private bool _hasEaten;
     private Direction _movementDirection = Direction.Down;
 
     public int Score => _snakeTail.Count;
@@ -16,9 +15,8 @@ public class Snake(int startingX, int startingY)
         if (isEating)
             GrowTail();
         else
-        {
-            RenderTail();
-        }
+            MaintainTail();
+
         if (direction != Direction.Invalid) _movementDirection = direction;
 
         switch (_movementDirection)
@@ -39,13 +37,19 @@ public class Snake(int startingX, int startingY)
     {
         return _snakeTail.Contains(coord);
     }
+    
+    public void Respawn()
+    {
+        _snakeTail.Clear();
+        _snakeHead.X = 10;
+        _snakeHead.Y = 2;
+        _movementDirection = Direction.Down;
+    }
 
-    private void RenderTail()
+    private void MaintainTail()
     {
         _snakeTail.Enqueue(new Coord(_snakeHead.X, _snakeHead.Y));
-        if (_hasEaten)
-            _hasEaten = false;
-        else if (_snakeTail.Count > 0)
+        if (_snakeTail.Count > 0)
             _snakeTail.Dequeue();
     }
 

@@ -12,13 +12,29 @@ public class Snake(int startingX, int startingY)
 
     public void ApplyMovementDirection(Direction direction, bool isEating)
     {
+        if (direction != Direction.Invalid && !IsOppositeDirection(direction))
+            _movementDirection = direction;
+        
         if (isEating)
             GrowTail();
         else
             MaintainTail();
 
-        if (direction != Direction.Invalid) _movementDirection = direction;
+        AdvanceSnakeHead();
+    }
 
+    private bool IsOppositeDirection(Direction newDirection)
+    {
+        if (_snakeTail.Count == 0) return false;
+
+        return (newDirection == Direction.Up && _movementDirection == Direction.Down) ||
+               (newDirection == Direction.Down && _movementDirection == Direction.Up) ||
+               (newDirection == Direction.Left && _movementDirection == Direction.Right) ||
+               (newDirection == Direction.Right && _movementDirection == Direction.Left);
+    }
+
+    private void AdvanceSnakeHead()
+    {
         switch (_movementDirection)
         {
             case Direction.Left: _snakeHead.X--; break;
@@ -27,7 +43,6 @@ public class Snake(int startingX, int startingY)
             case Direction.Down: _snakeHead.Y++; break;
         }
     }
-
     public bool HeadExistsAtCoordinate(Coord coord)
     {
         return coord == _snakeHead;

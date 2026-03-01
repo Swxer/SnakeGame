@@ -4,9 +4,9 @@ using System.Numerics;
 public class Program
 {
     private const int TargetFps = 16;
-    private const int XDimension = 50;
-    private const int YDimension = 20;
-    private static readonly Vector2 GridDimensions = new(XDimension, YDimension);
+    private const int Width = 50;
+    private const int Height = 20;
+    private static readonly Vector2 GridDimensions = new(Width, Height);
 
     private static void Main(string[] args)
     {

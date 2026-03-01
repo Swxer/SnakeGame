@@ -10,9 +10,6 @@ public class Apple
     {
         PickRandomAppleLocation(gridDimensions, snakes);
     }
-
-    public static int X => (int)_apple.X;
-    public static int Y => (int)_apple.Y;
     public Vector2 Position => _apple;
 
     public static bool AppleExistsAtCoordinate(Vector2 coord)

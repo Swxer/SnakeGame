@@ -6,9 +6,9 @@ public class Apple
     private static readonly Random Rand = new();
     private static Vector2 _apple = new(0, 0);
 
-    public Apple(Vector2 gridDimensions)
+    public Apple(Vector2 gridDimensions, List<Snake> snakes)
     {
-        PickRandomAppleLocation(gridDimensions);
+        PickRandomAppleLocation(gridDimensions, snakes);
     }
 
     public static int X => (int)_apple.X;
@@ -20,10 +20,24 @@ public class Apple
         return _apple == coord;
     }
 
-    public static void PickRandomAppleLocation(Vector2 gridDimensions)
+    public static void PickRandomAppleLocation(Vector2 gridDimension, List<Snake> snakes)
     {
-        var appleRandX = Rand.Next(1, (int)(gridDimensions.X - 1));
-        var appleRandY = Rand.Next(1, (int)(gridDimensions.Y - 1));
-        _apple = new Vector2(appleRandX, appleRandY);
+        var rand = new Random();
+        bool isOccupied;
+        Vector2 newPos;
+
+        do
+        {
+            var x = rand.Next(1, (int)gridDimension.X - 1);
+            var y = rand.Next(1, (int)gridDimension.Y - 1);
+            newPos = new Vector2(x, y);
+            
+            isOccupied = snakes.Any(s => 
+                s.HeadExistsAtCoordinate(newPos) || 
+                s.TailIntersectsWithCoordinate(newPos));
+
+        } while (isOccupied);
+        
+        _apple = newPos;
     }
 }

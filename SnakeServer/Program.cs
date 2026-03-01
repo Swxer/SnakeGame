@@ -12,23 +12,31 @@ public class Program
     {
         Console.CursorVisible = false;
         Console.Clear();
-        Snake snake = new(10, 2);
+        
+        List<Snake> snakes =
+        [
+            new Snake(10, 2),
+            new Snake(20, 10)
+        ];
+        
+        snakes[1].InitialiseTail(5, new Vector2(0, -1));
         Apple apple = new(GridDimensions);
 
         while (true)
         {
             Console.SetCursorPosition(0, 0);
-            Console.WriteLine("Score: " + snake.Score);
+            Snake player = snakes[0];
+            Console.WriteLine("Score: " + player.Score);
 
-            var isEating = CheckAppleCollision(snake, apple);
+            var isEating = CheckAppleCollision(player, apple);
             if (isEating)
                 Apple.PickRandomAppleLocation(GridDimensions);
 
-            snake.ApplyMovementDirection(GetMovementInput(), isEating);
-            RenderGame(GridDimensions, snake, apple);
+            player.ApplyMovementDirection(GetMovementInput(), isEating);
 
-            if (snake.ShouldDie(GridDimensions)) 
-                snake.Respawn();
+            HandleSnakesCollision(snakes, GridDimensions);
+            
+            RenderGame(GridDimensions, snakes, apple);
 
             Thread.Sleep(1000 / TargetFps);
         }
@@ -51,28 +59,71 @@ public class Program
         return movementDirection;
     }
 
-    private static void RenderGame(Vector2 grid, Snake snake, Apple apple)
+    private static void RenderGame(Vector2 grid, List<Snake> snakes, Apple apple)
     {
-        for (var y = 0; y < grid.Y; y++)
+        var width = (int)grid.X;
+        var height = (int)grid.Y;
+
+        for (var y = 0; y < height; y++)
         {
-            for (var x = 0; x < grid.X; x++)
+            for (var x = 0; x < width; x++)
             {
                 var currentPos = new Vector2(x, y);
-                if (snake.HeadExistsAtCoordinate(currentPos) || snake.TailIntersectsWithCoordinate(currentPos))
+                
+                if (snakes.Any(s => s.HeadExistsAtCoordinate(currentPos)))
                     Console.Write('■');
+                else if (snakes.Any(s => s.TailIntersectsWithCoordinate(currentPos)))
+                    Console.Write('T');
                 else if (Apple.AppleExistsAtCoordinate(currentPos))
                     Console.Write('A');
-                else if (x == 0 || y == 0 || x == (int)grid.X - 1 || y == (int)grid.Y - 1)
+                else if (x == 0 || y == 0 || x == width - 1 || y == height - 1)
                     Console.Write('#');
                 else
                     Console.Write(' ');
             }
-
             Console.WriteLine();
         }
     }
     private static bool CheckAppleCollision(Snake snake, Apple apple)
     {
-        return snake.X == Apple.X && snake.Y == Apple.Y;
+        return snake.Position == apple.Position;
+    }
+
+    private static void HandleSnakesCollision(List<Snake> snakes, Vector2 grid)
+    {
+        HashSet<Snake> deadSnakes = [];
+
+        foreach (var snake in snakes)
+        {
+            // hit wall or eat its own tail
+            if (snake.ShouldDie(grid))
+            {
+                deadSnakes.Add(snake);
+                continue;
+            }
+            
+            // snake collide with other snake
+            foreach (var other in snakes)
+            {
+                if (snake == other) continue;
+                
+                // head to head
+                if (other.HeadExistsAtCoordinate(snake.Position))
+                {
+                    deadSnakes.Add(snake);
+                    deadSnakes.Add(other);
+                }
+                // snake bite other's tail
+                else if (other.TailIntersectsWithCoordinate(snake.Position))
+                {
+                    deadSnakes.Add(snake);
+                }
+            }
+        }
+
+        foreach (var victim in deadSnakes)
+        {
+            victim.Respawn();
+        }
     }
 }

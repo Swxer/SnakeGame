@@ -9,6 +9,7 @@ public class Snake(int startingX, int startingY)
     public int Score => _snakeTail.Count;
     public int X => (int)_snakeHead.X;
     public int Y => (int)_snakeHead.Y;
+    public Vector2 Position => _snakeHead;
 
     public void ApplyMovementDirection(Direction direction, bool isEating)
     {
@@ -84,5 +85,14 @@ public class Snake(int startingX, int startingY)
                X >= gridDimension.X - 1 ||
                Y <= 0 ||
                Y >= gridDimension.Y - 1;
+    }
+    
+    public void InitialiseTail(int length, Vector2 direction)
+    {
+        _snakeTail.Clear();
+        for (var i = 1; i <= length; i++)
+        {
+            _snakeTail.Enqueue(_snakeHead - (direction * i));
+        }
     }
 }

@@ -1,14 +1,14 @@
 ﻿namespace SnakeServer;
-
+using System.Numerics;
 public class Snake(int startingX, int startingY)
 {
-    private readonly Coord _snakeHead = new(startingX, startingY);
-    private readonly Queue<Coord> _snakeTail = new();
+    private Vector2 _snakeHead = new(startingX, startingY);
+    private readonly Queue<Vector2> _snakeTail = new();
     private Direction _movementDirection = Direction.Down;
 
     public int Score => _snakeTail.Count;
-    public int X => _snakeHead.X;
-    public int Y => _snakeHead.Y;
+    public int X => (int)_snakeHead.X;
+    public int Y => (int)_snakeHead.Y;
 
     public void ApplyMovementDirection(Direction direction, bool isEating)
     {
@@ -35,41 +35,41 @@ public class Snake(int startingX, int startingY)
 
     private void AdvanceSnakeHead()
     {
-        switch (_movementDirection)
+        _snakeHead += _movementDirection switch
         {
-            case Direction.Left: _snakeHead.X--; break;
-            case Direction.Right: _snakeHead.X++; break;
-            case Direction.Up: _snakeHead.Y--; break;
-            case Direction.Down: _snakeHead.Y++; break;
-        }
+            Direction.Left  => new Vector2(-1, 0),
+            Direction.Right => new Vector2(1, 0),
+            Direction.Up    => new Vector2(0, -1),
+            Direction.Down  => new Vector2(0, 1),
+            _ => Vector2.Zero
+        };
     }
-    public bool HeadExistsAtCoordinate(Coord coord)
+    public bool HeadExistsAtCoordinate(Vector2 coord)
     {
         return coord == _snakeHead;
     }
 
-    public bool TailExistsAtCoordinate(Coord coord)
+    public bool TailIntersectsWithCoordinate(Vector2 vector2)
     {
-        return _snakeTail.Contains(coord);
+        return _snakeTail.Contains(vector2);
     }
     
     public void Respawn()
     {
         _snakeTail.Clear();
-        _snakeHead.X = 10;
-        _snakeHead.Y = 2;
+        _snakeHead = new Vector2(10, 2);
         _movementDirection = Direction.Down;
     }
 
     private void MaintainTail()
     {
-        _snakeTail.Enqueue(new Coord(_snakeHead.X, _snakeHead.Y));
+        _snakeTail.Enqueue(new Vector2(_snakeHead.X, _snakeHead.Y));
         if (_snakeTail.Count > 0)
             _snakeTail.Dequeue();
     }
 
     private void GrowTail()
     {
-        _snakeTail.Enqueue(new Coord(_snakeHead.X, _snakeHead.Y));
+        _snakeTail.Enqueue(new Vector2(_snakeHead.X, _snakeHead.Y));
     }
 }

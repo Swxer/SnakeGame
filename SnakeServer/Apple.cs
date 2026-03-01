@@ -1,27 +1,28 @@
 ﻿namespace SnakeServer;
+using System.Numerics;
 
 public class Apple
 {
     private static readonly Random Rand = new();
-    private static Coord _apple = new(0, 0);
+    private static Vector2 _apple = new(0, 0);
 
-    public Apple(Coord gridDimensions)
+    public Apple(Vector2 gridDimensions)
     {
         PickRandomAppleLocation(gridDimensions);
     }
 
-    public int X => _apple.X;
-    public int Y => _apple.Y;
+    public static int X => (int)_apple.X;
+    public static int Y => (int)_apple.Y;
 
-    public bool AppleExistsAtCoordinate(Coord coord)
+    public static bool AppleExistsAtCoordinate(Vector2 coord)
     {
-        return X == coord.X && Y == coord.Y;
+        return _apple == coord;
     }
 
-    public static void PickRandomAppleLocation(Coord gridDimensions)
+    public static void PickRandomAppleLocation(Vector2 gridDimensions)
     {
-        var appleRandX = Rand.Next(1, gridDimensions.X - 1);
-        var appleRandY = Rand.Next(1, gridDimensions.Y - 1);
-        _apple = new Coord(appleRandX, appleRandY);
+        var appleRandX = Rand.Next(1, (int)(gridDimensions.X - 1));
+        var appleRandY = Rand.Next(1, (int)(gridDimensions.Y - 1));
+        _apple = new Vector2(appleRandX, appleRandY);
     }
 }

@@ -1,11 +1,12 @@
 ﻿namespace SnakeServer;
+using System.Numerics;
 
 public class Program
 {
     private const int TargetFps = 16;
     private const int XDimension = 50;
     private const int YDimension = 20;
-    private static readonly Coord GridDimensions = new(XDimension, YDimension);
+    private static readonly Vector2 GridDimensions = new(XDimension, YDimension);
 
     private static void Main(string[] args)
     {
@@ -50,16 +51,16 @@ public class Program
         return movementDirection;
     }
 
-    private static void RenderGame(Coord grid, Snake snake, Apple apple)
+    private static void RenderGame(Vector2 grid, Snake snake, Apple apple)
     {
         for (var y = 0; y < grid.Y; y++)
         {
             for (var x = 0; x < grid.X; x++)
             {
-                var currentPos = new Coord(x, y);
-                if (snake.HeadExistsAtCoordinate(currentPos) || snake.TailExistsAtCoordinate(currentPos))
+                var currentPos = new Vector2(x, y);
+                if (snake.HeadExistsAtCoordinate(currentPos) || snake.TailIntersectsWithCoordinate(currentPos))
                     Console.Write('■');
-                else if (apple.AppleExistsAtCoordinate(currentPos))
+                else if (Apple.AppleExistsAtCoordinate(currentPos))
                     Console.Write('A');
                 else if (x == 0 || y == 0 || x == grid.X - 1 || y == grid.Y - 1)
                     Console.Write('#');
@@ -73,10 +74,10 @@ public class Program
 
     private static bool CheckAppleCollision(Snake snake, Apple apple)
     {
-        return snake.X == apple.X && snake.Y == apple.Y;
+        return snake.X == Apple.X && snake.Y == Apple.Y;
     }
 
-    private static bool CheckWallCollision(Snake snake, Coord gridDimension)
+    private static bool CheckWallCollision(Snake snake, Vector2 gridDimension)
     {
         return snake.X <= 0 ||
                snake.X >= gridDimension.X - 1 ||
@@ -86,6 +87,6 @@ public class Program
 
     private static bool CheckSelfCollision(Snake snake)
     {
-        return snake.TailExistsAtCoordinate(new Coord(snake.X, snake.Y));
+        return snake.TailIntersectsWithCoordinate(new Vector2(snake.X, snake.Y));
     }
 }

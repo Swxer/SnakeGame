@@ -27,7 +27,7 @@ public class Program
             snake.ApplyMovementDirection(GetMovementInput(), isEating);
             RenderGame(GridDimensions, snake, apple);
 
-            if (CheckSelfCollision(snake) || CheckWallCollision(snake, GridDimensions))
+            if (snake.ShouldDie(GridDimensions)) 
                 snake.Respawn();
 
             Thread.Sleep(1000 / TargetFps);
@@ -62,7 +62,7 @@ public class Program
                     Console.Write('■');
                 else if (Apple.AppleExistsAtCoordinate(currentPos))
                     Console.Write('A');
-                else if (x == 0 || y == 0 || x == grid.X - 1 || y == grid.Y - 1)
+                else if (x == 0 || y == 0 || x == (int)grid.X - 1 || y == (int)grid.Y - 1)
                     Console.Write('#');
                 else
                     Console.Write(' ');
@@ -71,22 +71,8 @@ public class Program
             Console.WriteLine();
         }
     }
-
     private static bool CheckAppleCollision(Snake snake, Apple apple)
     {
         return snake.X == Apple.X && snake.Y == Apple.Y;
-    }
-
-    private static bool CheckWallCollision(Snake snake, Vector2 gridDimension)
-    {
-        return snake.X <= 0 ||
-               snake.X >= gridDimension.X - 1 ||
-               snake.Y <= 0 ||
-               snake.Y >= gridDimension.Y - 1;
-    }
-
-    private static bool CheckSelfCollision(Snake snake)
-    {
-        return snake.TailIntersectsWithCoordinate(new Vector2(snake.X, snake.Y));
     }
 }

@@ -72,4 +72,17 @@ public class Snake(int startingX, int startingY)
     {
         _snakeTail.Enqueue(new Vector2(_snakeHead.X, _snakeHead.Y));
     }
+
+    public bool ShouldDie(Vector2 gridDimension)
+    {
+        return TailIntersectsWithCoordinate(_snakeHead) || CheckWallCollision(gridDimension);
+    }
+    
+    private bool CheckWallCollision(Vector2 gridDimension)
+    {
+        return X <= 0 ||
+               X >= gridDimension.X - 1 ||
+               Y <= 0 ||
+               Y >= gridDimension.Y - 1;
+    }
 }

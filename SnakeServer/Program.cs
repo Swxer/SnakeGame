@@ -19,6 +19,7 @@ public class Program
             new Snake(20, 10)
         ];
         
+        // dummy snake, create tail downwards
         snakes[1].InitialiseTail(5, new Vector2(0, -1));
         Apple apple = new(GridDimensions);
 

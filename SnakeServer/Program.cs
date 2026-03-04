@@ -7,22 +7,19 @@ public class Program
     private const int Width = 50;
     private const int Height = 20;
     private static readonly Vector2 GridDimensions = new(Width, Height);
+    private static readonly List<Snake> Snakes = [];
 
     private static void Main(string[] args)
     {
         Console.CursorVisible = false;
         Console.Clear();
-        
-        List<Snake> snakes =
-        [
-            new Snake(10, 2),
-            new Snake(20, 10)
-        ];
+        Snakes.Add(new Snake(10, 2));
+        Snakes.Add(new Snake(20, 10));
         
         // dummy snake, create tail downwards
-        snakes[1].InitialiseTail(5, new Vector2(0, -1));
-        var player = snakes[0];
-        Apple apple = new(GridDimensions, snakes);
+        Snakes[1].InitialiseTail(5, new Vector2(0, -1));
+        var player = Snakes[0];
+        Apple apple = new(GridDimensions, Snakes);
         
         while (true)
         {
@@ -31,11 +28,11 @@ public class Program
 
             var isEating = CheckAppleCollision(player, apple);
             if (isEating)
-                Apple.PickRandomAppleLocation(GridDimensions, snakes);
+                Apple.PickRandomAppleLocation(GridDimensions, Snakes);
 
             player.ApplyMovementDirection(GetMovementInput(), isEating);
-            HandleSnakesCollision(snakes, GridDimensions);
-            RenderGame(GridDimensions, snakes, apple);
+            HandleSnakesCollision(Snakes, GridDimensions);
+            RenderGame(GridDimensions, Snakes, apple);
             Thread.Sleep(1000 / TargetFps);
         }
     }

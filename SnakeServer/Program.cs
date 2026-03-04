@@ -3,13 +3,13 @@ using System.Numerics;
 
 public class Program
 {
-    private const int TargetFps = 16;
+    private const int TargetFps = 10;
     private const int Width = 50;
     private const int Height = 20;
     private static readonly Vector2 GridDimensions = new(Width, Height);
     private static readonly List<Snake> Snakes = [];
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         Console.CursorVisible = false;
         Console.Clear();
@@ -20,8 +20,11 @@ public class Program
         Snakes[1].InitialiseTail(5, new Vector2(0, -1));
         var player = Snakes[0];
         Apple apple = new(GridDimensions, Snakes);
+
+        var intervalMs = 1000 / TargetFps;
+        using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(intervalMs));
         
-        while (true)
+        while (await timer.WaitForNextTickAsync())
         {
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Score: " + player.Score);
@@ -33,7 +36,6 @@ public class Program
             player.ApplyMovementDirection(GetMovementInput(), isEating);
             HandleSnakesCollision(Snakes, GridDimensions);
             RenderGame(GridDimensions, Snakes, apple);
-            Thread.Sleep(1000 / TargetFps);
         }
     }
 

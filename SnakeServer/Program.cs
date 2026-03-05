@@ -13,12 +13,13 @@ public class Program
     {
         Console.CursorVisible = false;
         Console.Clear();
-        Snakes.Add(new Snake(10, 2));
-        Snakes.Add(new Snake(20, 10));
         
-        // dummy snake, create tail downwards
-        Snakes[1].InitialiseTail(5, new Vector2(0, -1));
-        var player = Snakes[0];
+        Snake player = new(5,2);
+        Snake dummy = new(20, 10);
+        dummy.InitialiseTail(5, new Vector2(0,-1));
+        Snakes.Add(player);
+        Snakes.Add(dummy);
+        
         Apple apple = new(GridDimensions, Snakes);
 
         var intervalMs = 1000 / TargetFps;

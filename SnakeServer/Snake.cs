@@ -2,16 +2,23 @@
 
 namespace SnakeServer;
 using System.Numerics;
-public class Snake(int startingX, int startingY)
+public class Snake
 {
-    private Vector2 _snakeHead = new(startingX, startingY);
+    private Vector2 _snakeHead;
     private readonly Queue<Vector2> _snakeTail = new();
-    private Direction _movementDirection = Direction.Down;
+    private Direction _movementDirection;
 
     public int Score => _snakeTail.Count;
     public int X => (int)_snakeHead.X;
     public int Y => (int)_snakeHead.Y;
     public Vector2 Position => _snakeHead;
+
+    public Snake(Vector2 gridDimension, List<Snake> snakes)
+    {
+        var spawnPos = PickRandomSpawnLocation(gridDimension, snakes);
+        _snakeHead = new Vector2(spawnPos.X, spawnPos.Y);
+        _movementDirection = Direction.Down;
+    }
 
     public void ApplyMovementDirection(Direction direction)
     {
@@ -91,5 +98,34 @@ public class Snake(int startingX, int startingY)
         {
             _snakeTail.Enqueue(_snakeHead - (direction * i));
         }
+    }
+
+    public List<Vector2> GetBody()
+    {
+        var body = new List<Vector2> { _snakeHead };
+        foreach (var segment in _snakeTail)
+            body.Add(segment);
+        return body;
+    }
+    
+    public static Vector2 PickRandomSpawnLocation(Vector2 gridDimension, List<Snake> snakes)
+    {
+        var rand = new Random();
+        Vector2 newPos;
+        bool isOccupied;
+
+        do
+        {
+            var x = rand.Next(1, (int)gridDimension.X - 1);
+            var y = rand.Next(1, (int)gridDimension.Y - 1);
+            newPos = new Vector2(x, y);
+
+            isOccupied = snakes.Any(s => 
+                s.HeadExistsAtCoordinate(newPos) || 
+                s.TailIntersectsWithCoordinate(newPos));
+
+        } while (isOccupied);
+
+        return newPos;
     }
 }

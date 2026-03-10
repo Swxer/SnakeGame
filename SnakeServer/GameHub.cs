@@ -1,20 +1,37 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System.Collections.Concurrent;
+using SnakeShared;
+
 
 namespace SnakeServer;
 
 public class GameHub : Hub
 {
-    public static readonly ConcurrentDictionary<string, Snake> Players = new();
-
+    private readonly GameEngine _gameEngine;
+    
+    public GameHub(GameEngine gameEngine)
+    {
+        _gameEngine = gameEngine;
+    }
+    
     public override async Task OnConnectedAsync()
     {
-        await Clients.All.SendAsync("Snake Oil", $"Player {Context.ConnectionId} connected");
+        await Clients.All.SendAsync("Snake Player", $"Player {Context.ConnectionId} connected");
   
     }
-
-    public async Task Move(string direction)
+    
+    public override Task OnDisconnectedAsync(Exception? exception)
     {
-        await Clients.All.SendAsync("Snake Move", $"Player {Context.ConnectionId} moving {direction}");
+        _gameEngine.RemovePlayer(Context.ConnectionId);
+        return Task.CompletedTask;
+    }
+
+    public Task Move(string direction)
+    {
+        if (Enum.TryParse<Direction>(direction, out var dir))
+        {
+            _gameEngine.QueueInput(Context.ConnectionId, dir);
+        }
+
+        return Task.CompletedTask;
     }
 }

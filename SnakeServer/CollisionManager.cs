@@ -8,13 +8,14 @@ public static class CollisionManager
         return snake.Position == apple.Position;
     }
 
-    public static void EatApple(Snake snake, Apple apple, Vector2 grid, List<Snake> snakes)
+    public static void EatApple(List<Snake> snakes, Apple apple, Vector2 grid)
     {
-        if (IsEatingApple(snake, apple))
-        {
-            snake.GrowTail();
-            Apple.PickRandomAppleLocation(grid, snakes);
-        }
+        foreach (var snake in snakes)
+            if (IsEatingApple(snake, apple))
+            {
+                snake.GrowTail();
+                Apple.PickRandomAppleLocation(grid, snakes);
+            }
     }
 
     private static void RespawnDeadSnakes(HashSet<Snake> deadSnakes)

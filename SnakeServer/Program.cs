@@ -1,62 +1,17 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
-using SnakeShared;
 
 namespace SnakeServer;
 using System.Numerics;
 
 public class Program
 {
-    private const int TargetFps = 10;
-    private const int Width = 50;
-    private const int Height = 20;
-    private static readonly Vector2 GridDimensions = new(Width, Height);
-    private static readonly List<Snake> Snakes = [];
-
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
         Console.CursorVisible = false;
         Console.Clear();
-        
-        Snake player = new(5,2);
-        Snake dummy = new(20, 10);
-        dummy.InitialiseTail(5, new Vector2(0,-1));
-        Snakes.Add(player);
-        Snakes.Add(dummy);
-        
-        Apple apple = new(GridDimensions, Snakes);
-        
-        var intervalMs = 1000 / TargetFps;
-        using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(intervalMs));
-        
-        while (await timer.WaitForNextTickAsync())
-        {
-            Console.SetCursorPosition(0, 0);
-            Console.WriteLine("Score: " + player.Score);
-        
-            CollisionManager.EatApple(player, apple, GridDimensions, Snakes);
-            player.ApplyMovementDirection(GetMovementInput());
-            CollisionManager.HandleCollision(Snakes, GridDimensions);
-            RenderGame(GridDimensions, Snakes, apple);
-        }
         Run();
-    }
-
-    private static Direction GetMovementInput()
-    {
-        if (!Console.KeyAvailable) return Direction.Invalid;
-        var key = Console.ReadKey(true).Key;
-
-        var movementDirection = key switch
-        {
-            ConsoleKey.LeftArrow or ConsoleKey.A => Direction.Left,
-            ConsoleKey.RightArrow or ConsoleKey.D => Direction.Right,
-            ConsoleKey.UpArrow or ConsoleKey.W => Direction.Up,
-            ConsoleKey.DownArrow or ConsoleKey.S => Direction.Down,
-            _ => Direction.Invalid
-        };
-
-        return movementDirection;
     }
 
     private static void RenderGame(Vector2 grid, List<Snake> snakes, Apple apple)
@@ -85,15 +40,24 @@ public class Program
         }
     }
 
-    public static void Run()
+    public static Task Run()
     {
         var builder = WebApplication.CreateBuilder();
+    
         builder.Services.AddSignalR();
-        
+        builder.Services.AddSingleton<GameEngine>();
+    
         var app = builder.Build();
-        
+    
+        var engine = app.Services.GetRequiredService<GameEngine>();
+        engine.SetHubContext(app.Services.GetRequiredService<IHubContext<GameHub>>());
+    
         app.MapHub<GameHub>("/gameHub");
+    
         Console.WriteLine("Fight for snake oil");
+    
+        _ = engine.StartAsync();
         app.Run();
+        return Task.CompletedTask;
     }
 }

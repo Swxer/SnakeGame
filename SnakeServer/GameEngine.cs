@@ -1,0 +1,109 @@
+﻿using System.Numerics;
+using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
+using SnakeShared;
+
+namespace SnakeServer;
+
+public class GameEngine
+{
+    private const int TargetFps = 10;
+    private const int Width = 50;
+    private const int Height = 20;
+    private static readonly Vector2 GridDimensions = new(Width, Height);
+
+    private readonly ConcurrentDictionary<string, Snake> _snakes = new();
+    private readonly ConcurrentDictionary<string, Direction> _pendingInputs = new();
+    private Apple? _apple;
+    private PeriodicTimer? _timer;
+    private IHubContext<GameHub>? _hubContext;
+
+    public void SetHubContext(IHubContext<GameHub> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+
+    public async Task StartAsync()
+    {
+        if (_hubContext == null)
+            throw new InvalidOperationException("HubContext not set. Call SetHubContext first.");
+
+        _apple = new Apple(GridDimensions, _snakes.Values.ToList());
+
+        var intervalMs = 1000 / TargetFps;
+        _timer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalMs));
+
+        while (await _timer.WaitForNextTickAsync())
+        {
+            await Tick();
+        }
+    }
+
+    public Task StopAsync()
+    {
+        _timer?.Dispose();
+        return Task.CompletedTask;
+    }
+
+    public void AddPlayer(string connectionId)
+    {
+        var snake = new Snake(GridDimensions, _snakes.Values.ToList());
+        _snakes.TryAdd(connectionId, snake);
+    }
+
+    public void RemovePlayer(string connectionId)
+    {
+        _snakes.TryRemove(connectionId, out _);
+        _pendingInputs.TryRemove(connectionId, out _);
+    }
+
+    public void QueueInput(string connectionId, Direction direction)
+    {
+        _pendingInputs[connectionId] = direction;
+    }
+
+    private async Task Tick()
+    {
+        foreach (var (connectionId, snake) in _snakes)
+        {
+            if (_pendingInputs.TryGetValue(connectionId, out var direction))
+                snake.ApplyMovementDirection(direction);
+            else
+                snake.ApplyMovementDirection(Direction.Invalid);
+        }
+
+        if (_apple != null)
+        {
+            CollisionManager.EatApple(_snakes.Values.ToList(), _apple, GridDimensions);
+            CollisionManager.HandleCollision(_snakes.Values.ToList(), GridDimensions);
+        }
+
+        await BroadcastState();
+    }
+
+    private async Task BroadcastState()
+    {
+        if (_hubContext == null) 
+            return;
+
+        var snakeStates = new List<SnakeState>();
+    
+        foreach (var (connectionId, snake) in _snakes)
+        {
+            snakeStates.Add(new SnakeState(
+                connectionId,
+                GetSnakeBody(snake),
+                Direction.Down,
+                snake.Score
+            ));
+        }
+
+        var applePosition = _apple?.Position ?? Vector2.Zero;
+        var gameState = new GameState(snakeStates, applePosition);
+        await _hubContext.Clients.All.SendAsync("GameState", gameState);
+    }
+    private static List<Vector2> GetSnakeBody(Snake snake)
+    {
+        return snake.GetBody();
+    }
+}

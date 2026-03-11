@@ -25,13 +25,9 @@ public class GameHub : Hub
         return Task.CompletedTask;
     }
 
-    public Task Move(string direction)
+    public Task Move(Direction direction)
     {
-        if (Enum.TryParse<Direction>(direction, out var dir))
-        {
-            _gameEngine.QueueInput(Context.ConnectionId, dir);
-        }
-
+        _gameEngine.QueueInput(Context.ConnectionId, direction);
         return Task.CompletedTask;
     }
 }

@@ -14,32 +14,6 @@ public class Program
         Run();
     }
 
-    private static void RenderGame(Vector2 grid, List<Snake> snakes, Apple apple)
-    {
-        var width = (int)grid.X;
-        var height = (int)grid.Y;
-
-        for (var y = 0; y < height; y++)
-        {
-            for (var x = 0; x < width; x++)
-            {
-                var currentPos = new Vector2(x, y);
-                
-                if (snakes.Any(s => s.HeadExistsAtCoordinate(currentPos)))
-                    Console.Write('■');
-                else if (snakes.Any(s => s.TailIntersectsWithCoordinate(currentPos)))
-                    Console.Write('T');
-                else if (Apple.AppleExistsAtCoordinate(currentPos))
-                    Console.Write('A');
-                else if (x == 0 || y == 0 || x == width - 1 || y == height - 1)
-                    Console.Write('#');
-                else
-                    Console.Write(' ');
-            }
-            Console.WriteLine();
-        }
-    }
-
     public static Task Run()
     {
         var builder = WebApplication.CreateBuilder();

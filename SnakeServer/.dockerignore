@@ -1,0 +1,17 @@
+# .dockerignore
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+.git/
+.github/
+*.md
+docker-compose.yml
+Dockerfile
+SnakeClient/
+SnakeShared/
+*.sln
+*.sln.DotSettings.user

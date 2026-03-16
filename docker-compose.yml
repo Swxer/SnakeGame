@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  snake-server:
+    build:
+      context: .
+      dockerfile: SnakeServer/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_RUNNING_IN_CONTAINER=true
+    restart: unless-stopped
+    networks:
+      - snake-network
+
+networks:
+  snake-network:
+    driver: bridge

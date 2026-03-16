@@ -22,7 +22,7 @@ public class Program
         AnsiConsole.Markup("[yellow]Connecting...[/]");
         
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl("http://localhost:5000/gameHub")
+            .WithUrl("http://localhost:8080/gameHub")
             .Build();
 
         await hubConnection.StartAsync();

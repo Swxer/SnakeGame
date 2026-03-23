@@ -18,6 +18,8 @@ public class GameEngine
     private Apple? _apple;
     private PeriodicTimer? _timer;
     private IHubContext<GameHub>? _hubContext;
+    
+    public int PlayerCount => _snakes.Count;
 
     public void SetHubContext(IHubContext<GameHub> hubContext)
     {

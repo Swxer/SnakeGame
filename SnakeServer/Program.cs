@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace SnakeServer;
 
@@ -25,7 +26,8 @@ public class Program
         var engine = app.Services.GetRequiredService<GameEngine>();
         engine.SetHubContext(app.Services.GetRequiredService<IHubContext<GameHub>>());
     
-        app.MapHub<GameHub>("/gameHub");
+        app.MapHub<GameHub>("/gamehub");
+        app.MapGet("/playercount", () => Results.Ok(new { players = engine.PlayerCount }));
     
         _ = engine.StartAsync();
         app.Run();

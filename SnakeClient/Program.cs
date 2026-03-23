@@ -24,7 +24,7 @@ public class Program
         var serverUrl = ParseServerUrl(args);
         
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{serverUrl}/gameHub")
+            .WithUrl($"{serverUrl}/gamehub")
             .Build();
 
         await hubConnection.StartAsync();

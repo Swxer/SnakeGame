@@ -8,7 +8,7 @@ public class Program
     private const int Width = 50;
     private const int Height = 20;
 
-    public static async Task Main()
+    public static async Task Main(string[] args)
     {
         AnsiConsole.Write(new FigletText("SNAKE").Color(Color.Purple_1));
         AnsiConsole.WriteLine();
@@ -20,9 +20,11 @@ public class Program
         } while (string.IsNullOrWhiteSpace(playerName) || playerName.Length > 10);
 
         AnsiConsole.Markup("[yellow]Connecting...[/]");
+
+        var serverUrl = ParseServerUrl(args);
         
         var hubConnection = new HubConnectionBuilder()
-            .WithUrl("http://localhost:8080/gameHub")
+            .WithUrl($"{serverUrl}/gameHub")
             .Build();
 
         await hubConnection.StartAsync();
@@ -196,5 +198,16 @@ public class Program
             Border = BoxBorder.None,
             Padding = new Padding(0)
         };
+    }
+
+    private static string ParseServerUrl(string[] args)
+    {
+        var serverUrl = "http://localhost:8080";
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "--server" && i + 1 < args.Length)
+                serverUrl = args[i + 1];
+        }    
+        return serverUrl;
     }
 }

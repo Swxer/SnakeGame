@@ -10,6 +10,7 @@ public class OrchestratorService
     
     private const int MinServerPort = 8080;
     private const int MaxServerPort = 8085;
+    private const int ContainerPort = 8080;
 
     private const int MaxPlayerPerServer = 3;
     private const int EmptyTimeOutSeconds = 60;
@@ -35,34 +36,41 @@ public class OrchestratorService
     private async Task<ServerInstance> StartServerAsync()
     {
         var port = GetNextAvailablePort();
-
-        var createResponse = await _docker.Containers.CreateContainerAsync(
-            new CreateContainerParameters
+        var containerId = await CreateSnakeContainerAsync(port);
+        await _docker.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
+        return RegisterNewServer(port, containerId);
+    }
+    
+    private async Task<string> CreateSnakeContainerAsync(int port)
+    {
+        var response = await _docker.Containers.CreateContainerAsync(new CreateContainerParameters
+        {
+            Image = "snake-server:latest",
+            Name = $"snake-server-{port}",
+            HostConfig = new HostConfig
             {
-                Image = "snake-server:latest",
-                Name = $"snake-server{port}",
-                HostConfig = new HostConfig
+                PortBindings = new Dictionary<string, IList<PortBinding>>
                 {
-                    PortBindings = new Dictionary<string, IList<PortBinding>>
-                    {
-                        { "8080/tcp", new List<PortBinding> { new PortBinding { HostPort = port.ToString() } } }
-                    }
-                },
-                Env = ["DOTNET_RUNNING_IN_CONTAINER=true"]
-            }
-        );
-
-        await _docker.Containers.StartContainerAsync(createResponse.ID, new ContainerStartParameters());
-
+                    { $"{ContainerPort}/tcp", new List<PortBinding> { new PortBinding { HostPort = port.ToString() } } }
+                }
+            },
+            Env = ["DOTNET_RUNNING_IN_CONTAINER=true"]
+        });
+        return response.ID;
+    }
+    
+    private ServerInstance RegisterNewServer(int port, string containerId)
+    {
         var server = new ServerInstance
         {
             Port = port,
-            ContainerId = createResponse.ID,
+            ContainerId = containerId,
             PlayerCount = 0,
             EmptySince = null
         };
+    
         _servers.Add(server);
-        Console.WriteLine($"Started SnakeServer container on port {port}");
+        Console.WriteLine($"[SUCCESS] Server live on port {port}");
         return server;
     }
 

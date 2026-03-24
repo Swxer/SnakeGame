@@ -13,7 +13,7 @@ public class OrchestratorService
     private const int ContainerPort = 8080;
 
     private const int MaxPlayerPerServer = 3;
-    private const int EmptyTimeOutSeconds = 60;
+    private const int EmptyTimeoutSeconds = 60;
 
     public OrchestratorService()
     {
@@ -94,7 +94,7 @@ public class OrchestratorService
         }
         
         var timeEmpty = DateTime.UtcNow - server.EmptySince.Value;
-        if (timeEmpty.TotalSeconds > EmptyTimeOutSeconds)
+        if (timeEmpty.TotalSeconds > EmptyTimeoutSeconds)
         {
             await ShutdownExpiredServer(server);
         }
@@ -110,7 +110,7 @@ public class OrchestratorService
     private static void StartEmptyTimer(ServerInstance server)
     {
         server.EmptySince = DateTime.UtcNow;
-        Console.WriteLine($"[INFO] Port {server.Port} is empty, starting {EmptyTimeOutSeconds}s timer");
+        Console.WriteLine($"[INFO] Port {server.Port} is empty, starting {EmptyTimeoutSeconds}s timer");
     }
 
     private async Task ShutdownExpiredServer(ServerInstance server)

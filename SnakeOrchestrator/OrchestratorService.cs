@@ -13,6 +13,8 @@ public class OrchestratorService
     private const int ContainerPort = 8080;
     
     private const int EmptyTimeoutSeconds = 60;
+    
+    public List<ServerInstance> GetAllServers() => _servers;
 
     public OrchestratorService()
     {
@@ -32,7 +34,7 @@ public class OrchestratorService
         throw new Exception("No available ports available in range 8080 - 8005");
     }
 
-    private async Task<ServerInstance> StartServerAsync()
+    public async Task<ServerInstance> StartServerAsync()
     {
         var port = GetNextAvailablePort();
         var containerId = await CreateSnakeContainerAsync(port);

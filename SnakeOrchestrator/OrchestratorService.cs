@@ -11,8 +11,7 @@ public class OrchestratorService
     private const int MinServerPort = 8080;
     private const int MaxServerPort = 8085;
     private const int ContainerPort = 8080;
-
-    private const int MaxPlayerPerServer = 3;
+    
     private const int EmptyTimeoutSeconds = 60;
 
     public OrchestratorService()

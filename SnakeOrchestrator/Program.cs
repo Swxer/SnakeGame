@@ -16,6 +16,16 @@ public class Program
 
         var orchestrator = app.Services.GetRequiredService<OrchestratorService>();
         var pollingService = app.Services.GetRequiredService<PollingService>();
+        
+        app.MapGet("/api/server", () =>
+        {
+            var server = orchestrator.FindLeastLoadedServer();
+            if (server == null)
+                return Results.NotFound("No servers available");
+        
+            return Results.Ok($"http://localhost:{server.Port}");
+        });
+        
     }
 
 }

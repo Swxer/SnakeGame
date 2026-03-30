@@ -22,77 +22,81 @@ Press Enter, enter your name, and start playing with friends!
 * Ctrl + C / Cmd + C - Exit Game
 
 ## System Architecture
-```bash
-       ┌──────────────────────────────────────────────────────────┐
-       │                    Google Cloud VPS                      │
-       │                      (e2-micro)                          │
-       │                                                          │
-       │   ┌─────────────────────────────────────────────────┐    │
-       │   │                  OpenSSH Server                 │    │
-       │   │              (port 22, ForceCommand)            │    │
-       │   └─────────────────────┬───────────────────────────┘    │
-       │                         │                                │
-       │                         ▼                                │
-       │   ┌─────────────────────────────────────────────────┐    │
-       │   │          /usr/local/bin/snake-gateway           │    │
-       │   │                  (Bash Script)                  │    │
-       │   └─────────────────────┬───────────────────────────┘    │
-       │                         │                                │
-       │                         ▼                                │
-       │   ┌─────────────────────────────────────────────────┐    │
-       │   │              SnakeOrchestrator                  │    │
-       │   │                 (port 5000)                     │    │
-       │   │  ┌─────────────────────────────────────────┐    │    │
-       │   │  │  GET /api/server  → returns least       │    │    │
-       │   │  │                  loaded server URL      │    │    │
-       │   │  │  GET /api/playercount → returns player  │    │    │
-       │   │  │                            count        │    │    │
-       │   │  └─────────────────────────────────────────┘    │    │
-       │   │                      │                          │    │
-       │   │    ┌─────────────────┼─────────────────┐        │    │
-       │   │    ▼                 ▼                 ▼        │    │
-       │   │  ┌───────┐        ┌───────┐        ┌───────┐    │    │
-       │   │  │ Docker│        │ Docker│        │ Docker│    │    │
-       │   │  │ :8080 │        │ :8081 │        │ :8082 │    │    │
-       │   │  └───────┘        └───────┘        └───────┘    │    │
-       │   │     │                │                │         │    │
-       │   │     ▼                ▼                ▼         │    │
-       │   │  ┌─────────────────────────────────────────┐    │    │
-       │   │  │           SnakeServer + SignalR         │    │    │
-       │   │  │         (GameHub, GameEngine)           │    │    │
-       │   │  └─────────────────────────────────────────┘    │    │
-       │   └─────────────────────────────────────────────────┘    │
-       │                                                          │
-       └──────────────────────────────────────────────────────────┘
-                 ▲                    ▲                    ▲
-                 │                    │                    │
-            [Player 1]           [Player 2]           [Player N]
-            SSH Client           SSH Client           SSH Client
-````
+```mermaid
+flowchart TB
+    %% Styling
+    classDef player fill:#4CAF50,stroke:#2E7D32,color:white
+    classDef server fill:#2196F3,stroke:#1565C0,color:white
+    classDef orchestrator fill:#FF9800,stroke:#E65100,color:white
+    classDef gateway fill:#9C27B0,stroke:#6A1B9A,color:white
+    classDef ssh fill:#607D8B,stroke:#37474F,color:white
+    
+    subgraph Players["Players"]
+        direction LR
+        Player1["Player 1<br/>SSH Client"]:::player
+        Player2["Player 2<br/>SSH Client"]:::player
+        %% Invisible link to keep them side-by-side
+        Player1 ~~~ Player2
+    end
+    
+    subgraph VPS["Google Cloud VPS (e2-micro)"]
+        SSH["OpenSSH Server<br/>port 22, ForceCommand"]:::ssh
+        Gateway["snake-gateway<br/>Bash Script"]:::gateway
+        
+        Orch["SnakeOrchestrator<br/>port 5000"]:::orchestrator
+        
+        subgraph Servers["Game Servers"]
+            Docker1["Docker :8080<br/>SnakeServer"]:::server
+            Docker2["Docker :8081<br/>SnakeServer"]:::server
+            Docker3["Docker :8082<br/>SnakeServer"]:::server
+        end
+    end
+    
+    %% Arrows from players to SSH
+    Player1 --> SSH
+    Player2 --> SSH
+    
+    SSH --> Gateway
+    Gateway --> Orch
+    Orch --> Docker1
+    Orch --> Docker2
+    Orch --> Docker3
+    
+    %% Return paths to players
+    Docker1 --> Player1
+    Docker1 --> Player2
+```
+
 
 ### How It Works
-1. SSH Connection The player runs `ssh player@34.170.39.24`. The SSH server accepts the connection and immediately triggers the ForceCommand configured in `/etc/ssh/sshd_config`. Instead of giving the player a shell, it executes the gateway script.
+#### 1. SSH Connection 
 
-2. Gateway Script The `snake-gateway` script is a simple bash program that acts as a router. It has one job: figure out which game server has the fewest players, then launch the SnakeClient connected to that server. It does this by calling the Orchestrator's API.
+The player runs `ssh player@34.170.39.24`. The SSH server accepts the connection and immediately triggers the ForceCommand configured in `/etc/ssh/sshd_config`. Instead of giving the player a shell, it executes the gateway script.
 
-3. Orchestrator The Orchestrator is a web API running on port 5000. It maintains a list of all running game servers, tracks how many players are on each, and knows which ports are available. When the gateway asks for a server, it scans the list and returns the URL of the server with the lowest player count.
+#### 2. Gateway Script
 
-4. Docker Container Management The Orchestrator uses the Docker API to manage game servers. When the first player connects and no servers are running, it spins up a new Docker container running SnakeServer. As more players join, it can start additional containers to distribute the load. When a server has no players for a while, it shuts down that container to save resources.
+ The `snake-gateway` script is a simple bash program that acts as a router. It has one job: figure out which game server has the fewest players, then launch the SnakeClient connected to that server. It does this by calling the Orchestrator's API.
 
-5. SignalR Connection The SnakeClient receives the server URL from the gateway, appends `/gamehub`, and establishes a SignalR connection. SignalR uses WebSockets to maintain a persistent, bidirectional channel between client and server. Unlike HTTP where the client has to keep asking for updates, the server can push game state to the client instantly.
+#### 3. Orchestrator 
 
-6. Game Loop The SnakeServer runs a game loop using a `PeriodicTimer` that ticks every 100ms (10 FPS). On each tick, it updates all snake positions, checks for collisions between snakes and apples or each other, generates new apples if needed, and broadcasts the complete game state to all connected clients.
+The Orchestrator is a web API running on port 5000. It maintains a list of all running game servers, tracks how many players are on each, and knows which ports are available. When the gateway asks for a server, it scans the list and returns the URL of the server with the lowest player count.
 
-7. Client Rendering The SnakeClient receives the game state and uses Spectre.Console to render it beautifully in the terminal. It doesn't redraw the entire screen each frame - instead, it uses cursor positioning to update only what changed, resulting in smooth animation without flicker.
+#### 4. Docker Container Management 
 
+The Orchestrator uses the Docker API to manage game servers. When the first player connects and no servers are running, it spins up a new Docker container running SnakeServer. As more players join, it can start additional containers to distribute the load. When a server has no players for a while, it shuts down that container to save resources.
 
-### Why SignalR?
-SignalR was chosen for several key reasons:
-* Real-time bidirectional communication - The server can push game state updates to all connected clients instantly, without clients constantly polling
-* Automatic reconnection - If a connection drops, SignalR handles reconnection automatically
-* Simple hub model - RPC-style method calls between client and server `(await hub.InvokeAsync("Move", direction))`
+#### 5. SignalR Connection 
 
-Traditional HTTP polling would be inefficient for a real-time game. SignalR uses WebSockets when available and falls back to other transports.
+The SnakeClient receives the server URL from the gateway, appends `/gamehub`, and establishes a SignalR connection. SignalR uses WebSockets to maintain a persistent, bidirectional channel between client and server. Unlike HTTP where the client has to keep asking for updates, the server can push game state to the client instantly.
+
+#### 6. Game Loop 
+
+The SnakeServer runs a game loop using a `PeriodicTimer` that ticks every 100ms (10 FPS). On each tick, it updates all snake positions, checks for collisions between snakes and apples or each other, generates new apples if needed, and broadcasts the complete game state to all connected clients.
+
+#### 7. Client Rendering 
+
+The SnakeClient receives the game state and uses Spectre.Console to render it beautifully in the terminal. It doesn't redraw the entire screen each frame - instead, it uses cursor positioning to update only what changed, resulting in smooth animation without flicker.
+
 
 ## Concurrency Handling
 
@@ -101,7 +105,7 @@ Traditional HTTP polling would be inefficient for a real-time game. SignalR uses
 * Two players could submit moves simultaneously
 * Game state updates could interleave unpredictably
 * Snake positions could become corrupted or lost
-### Our Solution - ConcurrentDictionary:
+### The Solution - ConcurrentDictionary:
 
 We use `ConcurrentDictionary<string, Snake>` to store all active snakes in a thread-safe way. Unlike a regular dictionary that requires locks for safe concurrent access, this collection is designed specifically for multi-threaded environments.
 

@@ -43,8 +43,8 @@ public class Program
         
         _ = pollingService.StartAsync();
 
-        Console.WriteLine("[ORCHESTRATOR] Running on http://localhost:5000");
-        app.Run("http://localhost:5000");
+        Console.WriteLine("[ORCHESTRATOR] Running on http://0.0.0.0:5000");
+        app.Run("http://0.0.0.0:5000");
         
     }
 }

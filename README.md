@@ -19,7 +19,7 @@ Press Enter, enter your name, and start playing with friends!
 
 ### Controls
 * Arrow Keys or WASD - Move snake
-* Ctrl + C / Cmd + C - Exit Game
+* Ctrl + C - Exit Game
 
 ## System Architecture
 ```mermaid
